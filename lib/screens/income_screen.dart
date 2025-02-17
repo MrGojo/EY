@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import '../widgets/custom_text_field.dart';
 import 'dashboard_screen.dart';
 
 class IncomeScreen extends StatefulWidget {
@@ -13,12 +12,18 @@ class IncomeScreen extends StatefulWidget {
 class _IncomeScreenState extends State<IncomeScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedAnnualIncome;
+  String? _selectedCategory;
   final _sourceController = TextEditingController();
-  final _categoryController = TextEditingController();
-  final _documentController = TextEditingController();
-  String? _selectedUploadStatus;
   final _ageController = TextEditingController();
-  PlatformFile? _selectedFile; // Add this variable
+  PlatformFile? _selectedFile;
+
+  // List of categories
+  final List<String> _categories = [
+    'EWS',
+    'SC/ST',
+    'OBC',
+    'General',
+  ];
 
   Future<void> _pickDocument() async {
     try {
@@ -30,7 +35,6 @@ class _IncomeScreenState extends State<IncomeScreen> {
       if (result != null) {
         setState(() {
           _selectedFile = result.files.first;
-          _documentController.text = _selectedFile!.name;
         });
       }
     } catch (e) {
@@ -43,7 +47,6 @@ class _IncomeScreenState extends State<IncomeScreen> {
     }
   }
 
-  // Replace the document TextField with this new widget
   Widget _buildDocumentField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,18 +60,15 @@ class _IncomeScreenState extends State<IncomeScreen> {
           child: Row(
             children: [
               Expanded(
-                child: TextFormField(
-                  controller: _documentController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Document',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    _selectedFile?.name ?? 'No file chosen',
+                    style: TextStyle(
+                      color: _selectedFile != null ? Colors.black : Colors.grey,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) return 'Document is required';
-                    return null;
-                  },
                 ),
               ),
               TextButton.icon(
@@ -93,7 +93,6 @@ class _IncomeScreenState extends State<IncomeScreen> {
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -140,69 +139,73 @@ class _IncomeScreenState extends State<IncomeScreen> {
               ),
               const SizedBox(height: 15),
 
-              CustomTextField(
+              TextFormField(
                 controller: _sourceController,
-                label: 'Source of Income',
+                decoration: const InputDecoration(
+                  labelText: 'Source of Income',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return 'Source is required';
                   return null;
                 },
               ),
-
-              CustomTextField(
-                controller: _categoryController,
-                label: 'Category',
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Category is required';
-                  return null;
-                },
-              ),
-
-              CustomTextField(
-                controller: _documentController,
-                label: 'Document',
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Document is required';
-                  return null;
-                },
-              ),
+              const SizedBox(height: 15),
 
               DropdownButtonFormField<String>(
-                value: _selectedUploadStatus,
+                value: _selectedCategory,
                 decoration: const InputDecoration(
-                  labelText: 'Document Upload',
+                  labelText: 'Category',
                   border: OutlineInputBorder(),
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                items: ['Uploaded', 'Not Uploaded']
-                    .map((status) => DropdownMenuItem(
-                          value: status,
-                          child: Text(status),
+                items: _categories
+                    .map((category) => DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
                         ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedUploadStatus = value;
+                    _selectedCategory = value;
                   });
                 },
                 validator: (value) {
-                  if (value == null) return 'Please select upload status';
+                  if (value == null) return 'Please select a category';
                   return null;
                 },
               ),
               const SizedBox(height: 15),
 
-              CustomTextField(
+              const Text(
+                'Document Upload',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildDocumentField(),
+              const SizedBox(height: 15),
+
+              TextFormField(
                 controller: _ageController,
-                label: 'Age',
+                decoration: const InputDecoration(
+                  labelText: 'Age',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value?.isEmpty ?? true) return 'Age is required';
                   return null;
                 },
-                keyboardType: TextInputType.number,
               ),
-
               const SizedBox(height: 30),
 
               Center(
@@ -210,11 +213,18 @@ class _IncomeScreenState extends State<IncomeScreen> {
                   width: 200,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
+                      if (_formKey.currentState!.validate() && _selectedFile != null) {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const DashboardScreen(),
+                          ),
+                        );
+                      } else if (_selectedFile == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please upload a document'),
+                            backgroundColor: Colors.red,
                           ),
                         );
                       }
@@ -246,8 +256,6 @@ class _IncomeScreenState extends State<IncomeScreen> {
   @override
   void dispose() {
     _sourceController.dispose();
-    _categoryController.dispose();
-    _documentController.dispose();
     _ageController.dispose();
     super.dispose();
   }

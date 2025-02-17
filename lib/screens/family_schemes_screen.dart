@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dashboard_screen.dart';
 import 'profile_screen.dart';
+import 'pradhan_mantri_awas_form.dart';
 
 class FamilySchemesScreen extends StatelessWidget {
   const FamilySchemesScreen({super.key});
@@ -82,24 +83,39 @@ class FamilySchemesScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   children: [
                     _buildSchemeCard(
+                      context: context,
                       imagePath: 'assets/images/pradhan_mantri_awas.png',
                       title: 'Pradhan Mantri\nAwas Yojana',
                       onTap: () => _launchSchemeUrl('pradhan_mantri_awas_url'),
+                      onApply: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PradhanMantriAwasForm(),
+                          ),
+                        );
+                      },
                     ),
                     _buildSchemeCard(
+                      context: context,
                       imagePath: 'assets/images/national_family.png',
                       title: 'National Family\nBenefit Scheme',
                       onTap: () => _launchSchemeUrl('national_family_url'),
+                      onApply: () {},
                     ),
                     _buildSchemeCard(
+                      context: context,
                       imagePath: 'assets/images/rashtriya_parivarik.png',
                       title: 'Rashtriya Parivarik\nLabh Yojana',
                       onTap: () => _launchSchemeUrl('rashtriya_parivarik_url'),
+                      onApply: () {},
                     ),
                     _buildSchemeCard(
+                      context: context,
                       imagePath: 'assets/images/pradhan_mantri_jan.png',
                       title: 'Pradhan Mantri Jan\nArogya Yojana',
                       onTap: () => _launchSchemeUrl('pradhan_mantri_jan_url'),
+                      onApply: () {},
                     ),
                   ],
                 ),
@@ -163,9 +179,11 @@ class FamilySchemesScreen extends StatelessWidget {
   }
 
   Widget _buildSchemeCard({
+    required BuildContext context,
     required String imagePath,
     required String title,
     required VoidCallback onTap,
+    required VoidCallback onApply,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -224,7 +242,7 @@ class FamilySchemesScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: onApply,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
               minimumSize: const Size(double.infinity, 30),
